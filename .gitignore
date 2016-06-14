@@ -6,3 +6,12 @@
 .DS_Store
 /build
 /captures
+/backend/build/
+app/libs/
+app/src/free/java/
+app/src/main/res/drawable/
+backend/src/main/webapp/css/
+backend/src/main/webapp/js/
+jokerepository/libs/
+jokeui/libs/
+jokeui/src/main/res/drawable/

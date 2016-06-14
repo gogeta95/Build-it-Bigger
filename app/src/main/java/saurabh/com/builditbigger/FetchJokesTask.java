@@ -3,13 +3,14 @@ package saurabh.com.builditbigger;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Parcelable;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.example.saurabh.myapplication.backend.myApi.MyApi;
-import com.example.saurabh.myapplication.backend.myApi.MyApiRequest;
-import com.example.saurabh.myapplication.backend.myApi.MyApiRequestInitializer;
 import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,11 +24,12 @@ import saurabh.com.jokeui.JokeActivity;
  */
 
 public class FetchJokesTask extends AsyncTask<Void, Void, List<Joke>> {
+    static final String ACTION_AD = "showAd";
     private static MyApi myApiService = null;
     private Context context;
     private ProgressDialog dialog;
 
-    public FetchJokesTask(Context context) {
+    FetchJokesTask(Context context) {
         this.context = context;
     }
 
@@ -35,14 +37,8 @@ public class FetchJokesTask extends AsyncTask<Void, Void, List<Joke>> {
     protected void onPreExecute() {
         if (myApiService == null) {
             MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(),
-                    new JacksonFactory(), null)
-                    .setRootUrl("http://10.0.3.2:8080/_ah/api/")
-                    .setGoogleClientRequestInitializer(new MyApiRequestInitializer() {
-                        @Override
-                        protected void initializeMyApiRequest(MyApiRequest<?> request) throws IOException {
-                            request.setDisableGZipContent(true);
-                        }
-                    });
+                    new AndroidJsonFactory(), null)
+                    .setRootUrl("https://build-it-bigger-1340.appspot.com/_ah/api/");
             myApiService = builder.build();
         }
         dialog = new ProgressDialog(context);
@@ -68,6 +64,7 @@ public class FetchJokesTask extends AsyncTask<Void, Void, List<Joke>> {
             }
             return jokes;
         } catch (IOException e) {
+            e.printStackTrace();
             return jokes;
         }
     }
@@ -75,6 +72,9 @@ public class FetchJokesTask extends AsyncTask<Void, Void, List<Joke>> {
     @Override
     protected void onPostExecute(List<Joke> jokes) {
         dialog.dismiss();
+        Intent intent = new Intent(ACTION_AD);
+        intent.putParcelableArrayListExtra(ACTION_AD, (ArrayList<? extends Parcelable>) jokes);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
         JokeActivity.start(context, (ArrayList<Joke>) jokes);
     }
 }
