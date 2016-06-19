@@ -22,3 +22,22 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+//Start local server in daemon mode.
+task runAppEngine(dependsOn: ":backend:appengineRun") {
+    project(":backend").afterEvaluate { backend ->
+        backend.extensions.appengine.daemon = true
+    }
+    doLast {
+        println "started the server!"
+    }
+}
+//Runs local server, runs app and closes local server.
+task testWithServer {
+    dependsOn 'runAppEngine'
+    dependsOn ':app:connectedAndroidTest'
+    dependsOn ':backend:appengineStop'
+    tasks.findByPath(':app:connectedAndroidTest').mustRunAfter runAppEngine
+    tasks.findByPath(':app:connectedAndroidTest').finalizedBy ':backend:appengineStop'
+    tasks.findByPath(':backend:appengineStop').mustRunAfter ':app:connectedAndroidTest'
+}
+
